@@ -1,16 +1,13 @@
-name: Build Electron App
+name: Build and Release Electron App
 
 on:
   push:
-    branches: [ "main" ]
+    tags:
+      - 'v*' # Triggers on version tags like v1.0.0
 
 jobs:
   build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
@@ -28,11 +25,11 @@ jobs:
     - name: Build Electron app
       run: npm run build
       env:
-        # Prevents code signing issues on platforms where it's not configured yet
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+    - name: Publish GitHub Release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: app-build-${{ matrix.os }}
-        path: dist/
+        files: dist/*
