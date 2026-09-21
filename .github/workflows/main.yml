@@ -3,13 +3,13 @@ name: Build and Release Electron App
 on:
   push:
     tags:
-      - 'v*' # Triggers when you push a tag like v1.0.0
+      - 'v*' # Triggers on version tags like v1.0.0
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Required so the GITHUB_TOKEN has permission to create a release
+    # Required so the workflow has permission to create a GitHub release
     permissions:
       contents: write
 
@@ -32,7 +32,7 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish GitHub Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
