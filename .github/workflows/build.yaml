@@ -3,13 +3,13 @@ name: Build and Release Electron App
 on:
   push:
     tags:
-      - 'v*' # Triggers on version tags like v1.0.0
+      - 'v*' # Triggers when you push a tag like v1.0.0
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
-    
-    # Required so the action has permission to create a GitHub release
+
+    # Required so the GITHUB_TOKEN has permission to create a release
     permissions:
       contents: write
 
@@ -26,7 +26,14 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Build and Publish Electron App
-      run: npx electron-builder --linux --publish always
+    - name: Build Electron app
+      run: npm run build
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish GitHub Release
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        files: dist/*
