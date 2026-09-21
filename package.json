@@ -10,9 +10,31 @@
   "author": "awoo-co",
   "type": "commonjs",
   "main": "index.js",
-"scripts": {
-  "start": "electron . --no-sandbox",
-  "test": "echo \"Error: no test specified\" && exit 1"
+  "scripts": {
+    "start": "electron . --no-sandbox",
+    "build": "electron-builder",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  
+  "build": {
+  "appId": "com.awooco.apptemplate",
+  "productName": "App Template",
+  "directories": {
+    "output": "dist"
+  },
+  "files": [
+    "index.js",
+    "package.json"
+  ],
+  "win": {
+    "target": ["nsis"]
+  },
+  "mac": {
+    "target": ["dmg"]
+  },
+  "linux": {
+    "target": ["AppImage"]
+  }
 },
   "dependencies": {
     "debug": "^4.4.3",
@@ -26,6 +48,7 @@
     "undici-types": "^7.18.2"
   },
   "devDependencies": {
-    "electron": "^44.4.3"
+    "electron": "^44.4.3",
+    "electron-builder": "^26.15.3"
   }
 }
