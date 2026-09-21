@@ -6,8 +6,12 @@ on:
       - 'v*' # Triggers on version tags like v1.0.0
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
+    
+    # Required so the action has permission to create a GitHub release
+    permissions:
+      contents: write
 
     steps:
     - name: Checkout repository
@@ -22,14 +26,7 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Build Electron app
-      run: npm run build
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Publish GitHub Release
-      uses: softprops/action-gh-release@v1
+    - name: Build and Publish Electron App
+      run: npx electron-builder --linux --publish always
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        files: dist/*
