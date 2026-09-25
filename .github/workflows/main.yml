@@ -41,6 +41,6 @@ jobs:
         with:
           tagName: __VERSION__ # Automatically uses the version from tauri.conf.json when a tag matches
           releaseName: "App v__VERSION__"
-          releaseBody: "See the assets to download and install this version."
+          releaseBody: "v__VERSION__"
           releaseDraft: false
           prerelease: false
