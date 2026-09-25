@@ -1,54 +1,12 @@
 {
   "name": "app-template",
-  "version": "1.0.0",
-  "description": "using electron",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/awooco/app-template.git"
-  },
-  "license": "MIT",
-  "author": "awoo-co",
-  "type": "commonjs",
-  "main": "index.js",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
   "scripts": {
-    "start": "electron . --no-sandbox",
-    "build": "electron-builder",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  
-  "build": {
-  "appId": "com.awooco.apptemplate",
-  "productName": "App Template",
-  "directories": {
-    "output": "dist"
-  },
-  "files": [
-    "index.js",
-    "package.json"
-  ],
-  "win": {
-    "target": ["nsis"]
-  },
-  "mac": {
-    "target": ["dmg"]
-  },
-  "linux": {
-    "target": ["AppImage"]
-  }
-},
-  "dependencies": {
-    "debug": "^4.4.3",
-    "env-paths": "^3.0.0",
-    "graceful-fs": "^4.2.11",
-    "ms": "^2.1.3",
-    "progress": "^2.0.3",
-    "semver": "^7.8.5",
-    "sumchecker": "^3.0.1",
-    "undici": "^7.29.1",
-    "undici-types": "^7.18.2"
+    "tauri": "tauri"
   },
   "devDependencies": {
-    "electron": "^44.4.3",
-    "electron-builder": "^26.15.3"
+    "@tauri-apps/cli": "^2"
   }
 }

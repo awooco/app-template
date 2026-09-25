@@ -1,4 +1,4 @@
-name: Build and Release Electron App
+name: "builder"
 
 on:
   push:
@@ -7,34 +7,40 @@ on:
       - 'v*'
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
 
     permissions:
       contents: write
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 26
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
 
-    - name: Build Electron app
-      run: npm run build
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-    - name: Publish GitHub Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        files: dist/*
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Run Tauri Build and Release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: __VERSION__ # Automatically uses the version from tauri.conf.json when a tag matches
+          releaseName: "App v__VERSION__"
+          releaseBody: "See the assets to download and install this version."
+          releaseDraft: false
+          prerelease: false
