@@ -17,30 +17,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          node-version: 20
-          cache: 'npm'
+          python-version: '3.10'
 
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install Linux dependencies
+      - name: Install Linux and Python Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y python3-tk
+          pip install --upgrade pip
+          pip install pyinstaller
 
-      - name: Install frontend dependencies
-        run: npm install
+      - name: Build Executable with PyInstaller
+        run: |
+          pyinstaller --noconfirm --onedir --windowed main.py
 
-      - name: Run Tauri Build and Release
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compress Build Output
+        run: |
+          tar -czvf app-linux-x86_64.tar.gz -C dist/ main
+
+      - name: Release and Upload Asset
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          tagName: __VERSION__ # Automatically uses the version from tauri.conf.json when a tag matches
-          releaseName: "App v__VERSION__"
-          releaseBody: "v__VERSION__"
-          releaseDraft: false
-          prerelease: false
+          files: app-linux-x86_64.tar.gz
+          generate_release_notes: true
