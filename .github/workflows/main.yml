@@ -23,17 +23,74 @@ jobs:
       - name: Install Linux and Python Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-tk
+          sudo apt-get install -y python3-tk wget
           pip install --upgrade pip
           pip install pyinstaller
 
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --noconfirm --onedir --windowed main.py
-
-      - name: Compress Build Output
+          pyinstaller --noconfirm --onefile --windowed main.py
+          
+      - name: Package as .deb
         run: |
-          tar -czvf app-linux-x86_64.tar.gz -C dist/ main
+          # 1. Create the Debian package folder structure
+          mkdir -p debian_package/usr/bin
+          mkdir -p debian_package/DEBIAN
+          
+          # 2. Copy the executable into the structure
+          cp dist/main debian_package/usr/bin/
+          
+          # 3. Create the control file (you can customize the Name, Description, etc.)
+          cat <<EOF > debian_package/DEBIAN/control
+          Package: my-python-app
+          Version: 1.0.0
+          Section: base
+          Priority: optional
+          Architecture: amd64
+          Maintainer: Builder <builder@example.com>
+          Description: A Python application built with PyInstaller.
+          EOF
+          
+          # 4. Build the .deb file
+          dpkg-deb --build debian_package app-linux-x86_64.deb
+
+      - name: Package as .AppImage
+        run: |
+          # 1. Download appimagetool to build the AppImage
+          wget -O appimagetool "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+          chmod +x appimagetool
+          
+          # 2. Create AppDir structure
+          mkdir -p AppDir/usr/bin
+          cp dist/main AppDir/usr/bin/
+          
+          # 3. Create a .desktop file
+          cat <<EOF > AppDir/myapp.desktop
+          [Desktop Entry]
+          Name=My Python App
+          Exec=main
+          Icon=myapp
+          Type=Application
+          Categories=Utility;
+          EOF
+          
+          # 4. Create a dummy icon (AppImage requires an icon to build successfully)
+          # You can replace this later by placing your actual icon at AppDir/myapp.svg
+          cat <<EOF > AppDir/myapp.svg
+          <svg width="64" height="64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" fill="blue"/></svg>
+          EOF
+          
+          # 5. Create the AppRun script
+          cat <<'EOF' > AppDir/AppRun
+          #!/bin/sh
+          HERE="$(dirname "$(readlink -f "${0}")")"
+          exec "${HERE}/usr/bin/main" "$@"
+          EOF
+          chmod +x AppDir/AppRun
+          
+          # 6. Build the AppImage (APPIMAGE_EXTRACT_AND_RUN bypasses FUSE limits in GitHub Actions)
+          export APPIMAGE_EXTRACT_AND_RUN=1
+          ./appimagetool AppDir app-linux-x86_64.AppImage
 
       - name: Release and Update Asset
         uses: softprops/action-gh-release@v2
@@ -43,4 +100,7 @@ jobs:
           body: "Automated build triggered by push to main branch."
           draft: false
           prerelease: true
-          files: app-linux-x86_64.tar.gz
+          # List both files here to upload them to the release
+          files: |
+            app-linux-x86_64.deb
+            app-linux-x86_64.AppImage
